@@ -171,7 +171,7 @@ function WatchedList({ watched }) {
   );
 }
 
-function BoxMovies({ children }) {
+function BoxMovies({ element }) {
   const [isOpen, setIsOpen] = useState(true);
   return (
     <div className="box">
@@ -181,7 +181,7 @@ function BoxMovies({ children }) {
       >
         {isOpen ? "–" : "+"}
       </button>
-      {isOpen && children}
+      {isOpen && element}
     </div>
   );
 }
@@ -201,13 +201,15 @@ export default function App() {
         <NumResult movies={movies} />
       </NavBar>
       <Main>
-        <BoxMovies>
-          <MovieList movies={movies} />
-        </BoxMovies>
-        <BoxMovies>
-          <WatchedSummary watched={watched} />
-          <WatchedList watched={watched} />
-        </BoxMovies>
+        <BoxMovies element={<MovieList movies={movies} />} />
+        <BoxMovies
+          element={
+            <>
+              <WatchedSummary watched={watched} />
+              <WatchedList watched={watched} />
+            </>
+          }
+        />
       </Main>
     </>
   );
