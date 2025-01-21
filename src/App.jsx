@@ -1,28 +1,28 @@
 import { useEffect, useState } from "react";
 
-const tempMovieData = [
-  {
-    imdbID: "tt15398776",
-    Title: "Oppenheimer",
-    Year: "2013",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BMDBmYTZjNjUtN2M1MS00MTQ2LTk2ODgtNzc2M2QyZGE5NTVjXkEyXkFqcGdeQXVyNzAwMjU2MTY@._V1_SX300.jpg",
-  },
-  {
-    imdbID: "tt1517268",
-    Title: "Barbie",
-    Year: "2023",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BNjU3N2QxNzYtMjk1NC00MTc4LTk1NTQtMmUxNTljM2I0NDA5XkEyXkFqcGdeQXVyODE5NzE3OTE@._V1_SX300.jpg",
-  },
-  {
-    imdbID: "tt8589698",
-    Title: "Teenage Mutant Ninja Turtles: Mutant Mayhem",
-    Year: "2023",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BYzE4MTllZTktMTIyZS00Yzg1LTg1YzAtMWQwZTZkNjNkODNjXkEyXkFqcGdeQXVyMTUzMTg2ODkz._V1_SX300.jpg",
-  },
-];
+// const tempMovieData = [
+//   {
+//     imdbID: "tt15398776",
+//     Title: "Oppenheimer",
+//     Year: "2013",
+//     Poster:
+//       "https://m.media-amazon.com/images/M/MV5BMDBmYTZjNjUtN2M1MS00MTQ2LTk2ODgtNzc2M2QyZGE5NTVjXkEyXkFqcGdeQXVyNzAwMjU2MTY@._V1_SX300.jpg",
+//   },
+//   {
+//     imdbID: "tt1517268",
+//     Title: "Barbie",
+//     Year: "2023",
+//     Poster:
+//       "https://m.media-amazon.com/images/M/MV5BNjU3N2QxNzYtMjk1NC00MTc4LTk1NTQtMmUxNTljM2I0NDA5XkEyXkFqcGdeQXVyODE5NzE3OTE@._V1_SX300.jpg",
+//   },
+//   {
+//     imdbID: "tt8589698",
+//     Title: "Teenage Mutant Ninja Turtles: Mutant Mayhem",
+//     Year: "2023",
+//     Poster:
+//       "https://m.media-amazon.com/images/M/MV5BYzE4MTllZTktMTIyZS00Yzg1LTg1YzAtMWQwZTZkNjNkODNjXkEyXkFqcGdeQXVyMTUzMTg2ODkz._V1_SX300.jpg",
+//   },
+// ];
 
 const tempWatchedData = [
   {
@@ -47,8 +47,12 @@ const tempWatchedData = [
   },
 ];
 
-const average = (arr) =>
-  arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
+const average = (array) =>
+  array.reduce(
+    (accumulator, currentvalue, array) =>
+      accumulator + currentvalue / array.length,
+    0
+  );
 
 function Logo() {
   return (
@@ -60,14 +64,14 @@ function Logo() {
 }
 
 function Search() {
-  const [query, setQuery] = useState("");
+  const [search, setSearch] = useState("");
   return (
     <input
       className="search"
       type="text"
       placeholder="Search movies..."
-      value={query}
-      onChange={(e) => setQuery(e.target.value)}
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
     />
   );
 }
@@ -79,6 +83,8 @@ function NumResult({ movies }) {
     </p>
   );
 }
+
+// movies? adalah optional chaining, digunakan untuk menghindari error ketika movies belum terdefinisi
 
 function NavBar({ children }) {
   return <nav className="nav-bar">{children}</nav>;
@@ -171,17 +177,14 @@ function WatchedList({ watched }) {
   );
 }
 
-function BoxMovies({ element }) {
+function BoxMovies({ children }) {
   const [isOpen, setIsOpen] = useState(true);
   return (
     <div className="box">
-      <button
-        className="btn-toggle"
-        onClick={() => setIsOpen1((open) => !open)}
-      >
+      <button className="btn-toggle" onClick={() => setIsOpen((open) => !open)}>
         {isOpen ? "–" : "+"}
       </button>
-      {isOpen && element}
+      {isOpen && children}
     </div>
   );
 }
@@ -200,22 +203,43 @@ function Loader() {
   );
 }
 
+function ErrorMessage({ message }) {
+  return (
+    <div className="error">
+      <span>⛔</span> {message}
+    </div>
+  );
+}
+
 const API_KEY = "9ec8f7e3";
 
 export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState(tempWatchedData);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const keyword = "fast and furious";
 
   useEffect(() => {
     async function fetchMovie() {
-      setIsLoading(true);
-      const res = await fetch(
-        `http://www.omdbapi.com/?i=tt3896198&apikey=${API_KEY}&s=oppenheimer`
-      );
-      const data = await res.json();
-      setMovies(data.Search);
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          `http://www.omdbapi.com/?i=tt3896198&apikey=${API_KEY}&s=${keyword}}`
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch data");
+
+        const data = await res.json();
+
+        if (data.Response === "False") throw new Error(data.Error);
+        setMovies(data.Search);
+        setIsLoading(false);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
     }
     fetchMovie();
   }, []);
@@ -228,17 +252,15 @@ export default function App() {
         <NumResult movies={movies} />
       </NavBar>
       <Main>
-        <BoxMovies
-          element={isLoading ? <Loader /> : <MovieList movies={movies} />}
-        />
-        <BoxMovies
-          element={
-            <>
-              <WatchedSummary watched={watched} />
-              <WatchedList watched={watched} />
-            </>
-          }
-        />
+        <BoxMovies>
+          {isLoading && <Loader />}
+          {error && <ErrorMessage message={error} />}
+          {!isLoading && !error && <MovieList movies={movies} />}
+        </BoxMovies>
+        <BoxMovies>
+          <WatchedSummary watched={watched} />
+          <WatchedList watched={watched} />
+        </BoxMovies>
       </Main>
     </>
   );
