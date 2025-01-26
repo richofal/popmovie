@@ -1,3 +1,4 @@
+import { use } from "react";
 import { useEffect, useState } from "react";
 
 // const tempMovieData = [
@@ -63,8 +64,7 @@ function Logo() {
   );
 }
 
-function Search() {
-  const [search, setSearch] = useState("");
+function Search({ search, setSearch }) {
   return (
     <input
       className="search"
@@ -218,14 +218,25 @@ export default function App() {
   const [watched, setWatched] = useState(tempWatchedData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const keyword = "fast and furious";
+  const [search, setSearch] = useState("");
+  const tempKeyword = "fast and furious";
+
+  useEffect(() => {
+    console.log(1);
+  }, []);
+
+  useEffect(() => {
+    console.log(2);
+  });
+
+  console.log(3);
 
   useEffect(() => {
     async function fetchMovie() {
       try {
         setIsLoading(true);
         const res = await fetch(
-          `http://www.omdbapi.com/?i=tt3896198&apikey=${API_KEY}&s=${keyword}}`
+          `http://www.omdbapi.com/?i=tt3896198&apikey=${API_KEY}&s=${tempKeyword}}`
         );
 
         if (!res.ok) throw new Error("Failed to fetch data");
@@ -248,7 +259,7 @@ export default function App() {
     <>
       <NavBar>
         <Logo />
-        <Search />
+        <Search search={search} setSearch={setSearch} />
         <NumResult movies={movies} />
       </NavBar>
       <Main>
