@@ -218,25 +218,15 @@ export default function App() {
   const [watched, setWatched] = useState(tempWatchedData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [search, setSearch] = useState("");
-  const tempKeyword = "fast and furious";
-
-  useEffect(() => {
-    console.log(1);
-  }, []);
-
-  useEffect(() => {
-    console.log(2);
-  });
-
-  console.log(3);
+  const [search, setSearch] = useState("fast and furious");
 
   useEffect(() => {
     async function fetchMovie() {
       try {
         setIsLoading(true);
+        setError("");
         const res = await fetch(
-          `http://www.omdbapi.com/?i=tt3896198&apikey=${API_KEY}&s=${tempKeyword}}`
+          `http://www.omdbapi.com/?i=tt3896198&apikey=${API_KEY}&s=${search}}`
         );
 
         if (!res.ok) throw new Error("Failed to fetch data");
@@ -252,8 +242,15 @@ export default function App() {
         setIsLoading(false);
       }
     }
+
+    if (search.length < 3) {
+      setMovies([]);
+      setError("");
+      return;
+    }
+
     fetchMovie();
-  }, []);
+  }, [search]);
 
   return (
     <>
