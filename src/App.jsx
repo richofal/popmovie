@@ -48,12 +48,14 @@ const tempWatchedData = [
   },
 ];
 
-const average = (array) =>
-  array.reduce(
-    (accumulator, currentvalue, array) =>
-      accumulator + currentvalue / array.length,
+const average = (array) => {
+  if (array.length === 0) return 0; // Pastikan array tidak kosong
+  const total = array.reduce(
+    (accumulator, currentValue) => accumulator + currentValue,
     0
   );
+  return total / array.length;
+};
 
 function Logo() {
   return (
@@ -90,9 +92,9 @@ function NavBar({ children }) {
   return <nav className="nav-bar">{children}</nav>;
 }
 
-function MovieItem({ movie }) {
+function MovieItem({ movie, onSelectMovieId }) {
   return (
-    <li key={movie.imdbID}>
+    <li key={movie.imdbID} onClick={() => onSelectMovieId(movie.imdbID)}>
       <img src={movie.Poster} alt={`${movie.Title} poster`} />
       <h3>{movie.Title}</h3>
       <div>
@@ -105,11 +107,15 @@ function MovieItem({ movie }) {
   );
 }
 
-function MovieList({ movies }) {
+function MovieList({ movies, onSelectMovieId }) {
   return (
-    <ul className="list">
+    <ul className="list list-movies">
       {movies?.map((movie) => (
-        <MovieItem key={movie.imdbID} movie={movie} />
+        <MovieItem
+          key={movie.imdbID}
+          movie={movie}
+          onSelectMovieId={onSelectMovieId}
+        />
       ))}
     </ul>
   );
@@ -119,6 +125,7 @@ function WatchedSummary({ watched }) {
   const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
   const avgUserRating = average(watched.map((movie) => movie.userRating));
   const avgRuntime = average(watched.map((movie) => movie.runtime));
+
   return (
     <div className="summary">
       <h2>Movies you watched</h2>
@@ -129,15 +136,15 @@ function WatchedSummary({ watched }) {
         </p>
         <p>
           <span>🎬</span>
-          <span>{avgImdbRating}</span>
+          <span>{isNaN(avgImdbRating) ? "N/A" : avgImdbRating}</span>
         </p>
         <p>
           <span>🌟</span>
-          <span>{avgUserRating}</span>
+          <span>{isNaN(avgUserRating) ? "N/A" : avgUserRating}</span>
         </p>
         <p>
           <span>⏳</span>
-          <span>{avgRuntime} min</span>
+          <span>{isNaN(avgRuntime) ? "N/A" : avgRuntime} min</span>
         </p>
       </div>
     </div>
@@ -219,12 +226,19 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("fast and furious");
+  const [selectedMovieId, setSelectedMovieId] = useState(null);
+
+  function handleSelectMovieID(id) {
+    // console.log(id);
+    setSelectedMovieId(id);
+  }
 
   useEffect(() => {
     async function fetchMovie() {
       try {
         setIsLoading(true);
         setError("");
+
         const res = await fetch(
           `http://www.omdbapi.com/?i=tt3896198&apikey=${API_KEY}&s=${search}}`
         );
@@ -234,8 +248,11 @@ export default function App() {
         const data = await res.json();
 
         if (data.Response === "False") throw new Error(data.Error);
+
+        // console.log(data.search);
+
         setMovies(data.Search);
-        setIsLoading(false);
+        // setIsLoading(false);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -263,7 +280,9 @@ export default function App() {
         <BoxMovies>
           {isLoading && <Loader />}
           {error && <ErrorMessage message={error} />}
-          {!isLoading && !error && <MovieList movies={movies} />}
+          {!isLoading && !error && (
+            <MovieList movies={movies} onSelectMovieId={handleSelectMovieID} />
+          )}
         </BoxMovies>
         <BoxMovies>
           <WatchedSummary watched={watched} />
