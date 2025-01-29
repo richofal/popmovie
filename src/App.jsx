@@ -1,4 +1,3 @@
-import { use } from "react";
 import { useEffect, useState } from "react";
 
 // const tempMovieData = [
@@ -82,11 +81,9 @@ function NumResult({ movies }) {
   return (
     <p className="num-results">
       Found <strong>{movies?.length}</strong> results
-    </p>
+    </p> // movies? adalah optional chaining, digunakan untuk menghindari error ketika movies belum terdefinisi
   );
 }
-
-// movies? adalah optional chaining, digunakan untuk menghindari error ketika movies belum terdefinisi
 
 function NavBar({ children }) {
   return <nav className="nav-bar">{children}</nav>;
@@ -117,7 +114,7 @@ function MovieList({ movies, onSelectMovieId }) {
           onSelectMovieId={onSelectMovieId}
         />
       ))}
-    </ul>
+    </ul> // movies? adalah optional chaining, digunakan untuk menghindari error ketika movies bernilai null atau undefined
   );
 }
 
@@ -184,6 +181,17 @@ function WatchedList({ watched }) {
   );
 }
 
+function MovieDetails({ selectedMovieId, onCloseMovie }) {
+  return (
+    <div className="details">
+      <button className="btn-back" onClick={onCloseMovie}>
+        &#x2715;
+      </button>
+      {selectedMovieId}
+    </div>
+  );
+}
+
 function BoxMovies({ children }) {
   const [isOpen, setIsOpen] = useState(true);
   return (
@@ -192,7 +200,7 @@ function BoxMovies({ children }) {
         {isOpen ? "–" : "+"}
       </button>
       {isOpen && children}
-    </div>
+    </div> // Jika isOpen bernilai true, maka tampilkan children
   );
 }
 
@@ -221,16 +229,19 @@ function ErrorMessage({ message }) {
 const API_KEY = "9ec8f7e3";
 
 export default function App() {
-  const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState(tempWatchedData);
+  const [search, setSearch] = useState("batman");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [search, setSearch] = useState("fast and furious");
+  const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState(tempWatchedData);
   const [selectedMovieId, setSelectedMovieId] = useState(null);
 
   function handleSelectMovieID(id) {
-    // console.log(id);
-    setSelectedMovieId(id);
+    setSelectedMovieId((idSebelum) => (idSebelum === id ? null : id));
+  }
+
+  function handleCloseMovie() {
+    setSelectedMovieId(null);
   }
 
   useEffect(() => {
@@ -240,7 +251,7 @@ export default function App() {
         setError("");
 
         const res = await fetch(
-          `http://www.omdbapi.com/?i=tt3896198&apikey=${API_KEY}&s=${search}}`
+          `https://www.omdbapi.com/?i=tt3896198&apikey=${API_KEY}&s=${search}`
         );
 
         if (!res.ok) throw new Error("Failed to fetch data");
@@ -285,8 +296,18 @@ export default function App() {
           )}
         </BoxMovies>
         <BoxMovies>
-          <WatchedSummary watched={watched} />
-          <WatchedList watched={watched} />
+          {selectedMovieId ? (
+            <MovieDetails
+              selectedMovieId={selectedMovieId}
+              onCloseMovie={handleCloseMovie}
+            />
+          ) : (
+            <>
+              <WatchedSummary watched={watched} />
+              <WatchedList watched={watched} />
+            </>
+          )}
+          ;
         </BoxMovies>
       </Main>
     </>
