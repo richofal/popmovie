@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import StarRating from "./components/StarRating";
 
 // const tempMovieData = [
 //   {
@@ -183,9 +184,12 @@ function WatchedList({ watched }) {
 
 function MovieDetails({ selectedMovieId, onCloseMovie }) {
   const [movie, setMovie] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
     Title: title,
     Year: year,
+    Released: released,
     Poster: poster,
     imdbRating,
     Runtime: runtime,
@@ -198,11 +202,13 @@ function MovieDetails({ selectedMovieId, onCloseMovie }) {
   console.log(title, year);
   useEffect(() => {
     async function getMovieDetails() {
+      setIsLoading(true);
       const response = await fetch(
         `https://www.omdbapi.com/?i=${selectedMovieId}&apikey=${API_KEY}`
       );
       const data = await response.json();
       setMovie(data);
+      setIsLoading(false);
     }
 
     getMovieDetails();
@@ -210,10 +216,44 @@ function MovieDetails({ selectedMovieId, onCloseMovie }) {
 
   return (
     <div className="details">
-      <button className="btn-back" onClick={onCloseMovie}>
-        &#x2715;
-      </button>
-      {selectedMovieId}
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <>
+          <header>
+            <button className="btn-back" onClick={onCloseMovie}>
+              &#x2715;
+            </button>
+            <img src={poster} alt={`${title} poster`} />
+            <div className="details-overview">
+              <h2>{title}</h2>
+              <p>
+                <span>📅</span>
+                <span>{released}</span>
+              </p>
+              <p>
+                <span>⏳</span>
+                <span>{runtime}</span>
+              </p>
+              <p>
+                <span>🌟</span>
+                <span>{imdbRating}</span>
+              </p>
+            </div>
+          </header>
+          <section>
+            <p>
+              <em>{plot}</em>
+            </p>
+            <p>Genre: {genre}</p>
+            <p>Starring: {actors}</p>
+            <p>Directed by: {director}</p>
+            <div className="rating">
+              <StarRating max={10} size={22} color="#fcc419" />
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 }
@@ -333,7 +373,6 @@ export default function App() {
               <WatchedList watched={watched} />
             </>
           )}
-          ;
         </BoxMovies>
       </Main>
     </>
