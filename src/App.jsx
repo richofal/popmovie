@@ -149,7 +149,7 @@ function WatchedSummary({ watched }) {
   );
 }
 
-function WatchedItem({ movie }) {
+function WatchedItem({ movie, onDeleteWatched }) {
   return (
     <li key={movie.imdbID}>
       <img src={movie.poster} alt={`${movie.title} poster`} />
@@ -167,16 +167,26 @@ function WatchedItem({ movie }) {
           <span>⏳</span>
           <span>{movie.runtime} min</span>
         </p>
+        <button
+          className="btn-delete"
+          onClick={() => onDeleteWatched(movie.imdbID)}
+        >
+          &#x2715;
+        </button>
       </div>
     </li>
   );
 }
 
-function WatchedList({ watched }) {
+function WatchedList({ watched, onDeleteWatched }) {
   return (
     <ul className="list">
       {watched.map((movie) => (
-        <WatchedItem key={movie.imdbID} movie={movie} />
+        <WatchedItem
+          key={movie.imdbID}
+          movie={movie}
+          onDeleteWatched={onDeleteWatched}
+        />
       ))}
     </ul>
   );
@@ -192,6 +202,9 @@ function MovieDetails({
   const [userRating, setUserRating] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const isWatched = watched.some((movie) => movie.imdbID === selectedMovieId);
+  const userRatingWatched = watched.find(
+    (movie) => movie.imdbID === selectedMovieId
+  )?.userRating;
 
   const {
     Title: title,
@@ -277,12 +290,16 @@ function MovieDetails({
                     color="#fcc419"
                     onSetRating={setUserRating}
                   />
-                  <button className="btn-add" onClick={handleAddWatched}>
-                    + Add to Watched{" "}
-                  </button>
+                  {userRating > 0 && (
+                    <button className="btn-add" onClick={handleAddWatched}>
+                      + Add to Watched{" "}
+                    </button>
+                  )}
                 </>
               ) : (
-                <span>Already watched</span>
+                <span>
+                  Already watched, with a rating of {userRatingWatched} / 10
+                </span>
               )}
             </div>
           </section>
@@ -342,6 +359,10 @@ export default function App() {
 
   function handleAddWatched(movie) {
     setWatched((watched) => [...watched, movie]);
+  }
+
+  function handleDeleteWatched(id) {
+    setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
 
   function handleCloseMovie() {
@@ -410,7 +431,10 @@ export default function App() {
           ) : (
             <>
               <WatchedSummary watched={watched} />
-              <WatchedList watched={watched} />
+              <WatchedList
+                watched={watched}
+                onDeleteWatched={handleDeleteWatched}
+              />
             </>
           )}
         </BoxMovies>
