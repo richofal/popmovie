@@ -138,7 +138,7 @@ function WatchedSummary({ watched }) {
         </p>
         <p>
           <span>🌟</span>
-          <span>{isNaN(avgUserRating) ? "N/A" : avgUserRating}</span>
+          <span>{isNaN(avgUserRating) ? "N/A" : avgUserRating.toFixed(1)}</span>
         </p>
         <p>
           <span>⏳</span>
@@ -182,9 +182,16 @@ function WatchedList({ watched }) {
   );
 }
 
-function MovieDetails({ selectedMovieId, onCloseMovie, onAddWatched }) {
+function MovieDetails({
+  selectedMovieId,
+  onCloseMovie,
+  onAddWatched,
+  watched,
+}) {
   const [movie, setMovie] = useState({});
+  const [userRating, setUserRating] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const isWatched = watched.some((movie) => movie.imdbID === selectedMovieId);
 
   const {
     Title: title,
@@ -207,6 +214,7 @@ function MovieDetails({ selectedMovieId, onCloseMovie, onAddWatched }) {
       poster,
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ").at(0)),
+      userRating: Number(userRating),
     };
     onAddWatched(newWatchedMovie);
     onCloseMovie();
@@ -261,10 +269,21 @@ function MovieDetails({ selectedMovieId, onCloseMovie, onAddWatched }) {
             <p>Starring: {actors}</p>
             <p>Directed by: {director}</p>
             <div className="rating">
-              <StarRating max={10} size={22} color="#fcc419" />
-              <button className="btn-add" onClick={handleAddWatched}>
-                + Add to Watched{" "}
-              </button>
+              {!isWatched ? (
+                <>
+                  <StarRating
+                    max={10}
+                    size={22}
+                    color="#fcc419"
+                    onSetRating={setUserRating}
+                  />
+                  <button className="btn-add" onClick={handleAddWatched}>
+                    + Add to Watched{" "}
+                  </button>
+                </>
+              ) : (
+                <span>Already watched</span>
+              )}
             </div>
           </section>
         </>
@@ -386,6 +405,7 @@ export default function App() {
               selectedMovieId={selectedMovieId}
               onCloseMovie={handleCloseMovie}
               onAddWatched={handleAddWatched}
+              watched={watched}
             />
           ) : (
             <>
