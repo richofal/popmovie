@@ -250,6 +250,10 @@ function MovieDetails({
   useEffect(() => {
     if (!title) return;
     document.title = `Pop Movie | ${title}`;
+    return function () {
+      document.title = "Pop Movie";
+      console.log(`cleanup ${title}`);
+    };
   }, [title]);
 
   return (
@@ -303,7 +307,7 @@ function MovieDetails({
                 </>
               ) : (
                 <span>
-                  Already watched, with a rating of {userRatingWatched} / 10
+                  Sudah ditonton, dengna rating {userRatingWatched} / 10
                 </span>
               )}
             </div>
