@@ -379,13 +379,15 @@ export default function App() {
   }
 
   useEffect(() => {
+    const controller = new AbortController();
     async function fetchMovie() {
       try {
         setIsLoading(true);
         setError("");
 
         const res = await fetch(
-          `https://www.omdbapi.com/?i=tt3896198&apikey=${API_KEY}&s=${search}`
+          `https://www.omdbapi.com/?i=tt3896198&apikey=${API_KEY}&s=${search}`,
+          { signal: controller.signal }
         );
 
         if (!res.ok) throw new Error("Failed to fetch data");
@@ -397,8 +399,10 @@ export default function App() {
         // console.log(data.search);
 
         setMovies(data.Search);
+        setError("");
         // setIsLoading(false);
       } catch (error) {
+        if (error.name === "AbortError") return;
         setError(error.message);
       } finally {
         setIsLoading(false);
@@ -412,6 +416,9 @@ export default function App() {
     }
 
     fetchMovie();
+    return function () {
+      controller.abort();
+    };
   }, [search]);
 
   return (
