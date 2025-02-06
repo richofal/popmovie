@@ -355,7 +355,7 @@ function ErrorMessage({ message }) {
 const API_KEY = "9ec8f7e3";
 
 export default function App() {
-  const [search, setSearch] = useState("batman");
+  const [search, setSearch] = useState("avatar");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [movies, setMovies] = useState([]);
